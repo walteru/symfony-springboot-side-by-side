@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Same App, Two Stacks — Sprint 1</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main>
+    <header>
+        <h1>Same App, Two Stacks — Sprint 1</h1>
+        <p class="subtitle">Powered by <strong th:text="${framework}">Spring Boot</strong>
+            <span th:text="${frameworkVersion}"></span></p>
+    </header>
+
+    <section>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Weight</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${items}">
+                    <td th:text="${item.id}"></td>
+                    <td th:text="${item.title}"></td>
+                    <td th:text="${item.category}"></td>
+                    <td><span th:classappend="'status status--' + ${item.status}" th:text="${item.status}"></span></td>
+                    <td th:text="${item.weight}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="summary">
+        <p>Total items: <strong th:text="${totalItems}">5</strong></p>
+        <p>Total weight: <strong th:text="${totalWeight}">18</strong></p>
+        <p>Completion: <strong th:text="${completion} + '%'">72%</strong></p>
+    </section>
+</main>
+</body>
+</html>

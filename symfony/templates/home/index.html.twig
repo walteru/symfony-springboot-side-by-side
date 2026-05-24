@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Same App, Two Stacks — Sprint 1</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main>
+    <header>
+        <h1>Same App, Two Stacks — Sprint 1</h1>
+        <p class="subtitle">Powered by <strong>{{ framework }}</strong> <span>{{ frameworkVersion }}</span></p>
+    </header>
+
+    <section>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Weight</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.category }}</td>
+                    <td><span class="status status--{{ item.status }}">{{ item.status }}</span></td>
+                    <td>{{ item.weight }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="summary">
+        <p>Total items: <strong>{{ totalItems }}</strong></p>
+        <p>Total weight: <strong>{{ totalWeight }}</strong></p>
+        <p>Completion: <strong>{{ completion }}%</strong></p>
+    </section>
+</main>
+</body>
+</html>

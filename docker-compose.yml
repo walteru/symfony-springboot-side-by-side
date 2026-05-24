@@ -1,0 +1,23 @@
+services:
+  symfony:
+    build:
+      context: ./symfony
+    container_name: sidebyside-symfony
+    ports:
+      - "8094:80"
+    volumes:
+      - ./symfony:/var/www/html
+      - composer-cache:/root/.composer/cache
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+
+  springboot:
+    build:
+      context: ./springboot
+    container_name: sidebyside-springboot
+    ports:
+      - "8095:8080"
+
+volumes:
+  composer-cache:
