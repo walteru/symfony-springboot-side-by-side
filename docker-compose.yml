@@ -1,4 +1,23 @@
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: sidebyside-mysql
+    # Una sola instancia MySQL con DOS bases separadas (ver docker/mysql/init.sql):
+    # app_symfony y app_springboot. Cada stack gestiona su propio esquema.
+    environment:
+      MYSQL_ROOT_PASSWORD: root_demo_not_for_production
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_demo_not_for_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
   symfony:
     build:
       context: ./symfony
@@ -11,6 +30,10 @@ services:
     environment:
       APP_ENV: dev
       APP_DEBUG: "1"
+      DATABASE_URL: "mysql://app:app_demo_not_for_production@mysql:3306/app_symfony?serverVersion=8.0&charset=utf8mb4"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   springboot:
     build:
@@ -18,6 +41,14 @@ services:
     container_name: sidebyside-springboot
     ports:
       - "8095:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/app_springboot"
+      SPRING_DATASOURCE_USERNAME: app
+      SPRING_DATASOURCE_PASSWORD: app_demo_not_for_production
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   composer-cache:
+  mysql-data:

@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Domain\SprintItem;
-use App\Domain\SprintItemRepository;
+use App\Entity\SprintItem;
+use App\Repository\SprintItemRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
@@ -18,10 +18,12 @@ class HomeController extends AbstractController
     #[Route('/', name: 'home', methods: ['GET'])]
     public function index(): Response
     {
-        $items = $this->repository->findAll();
-        $totalWeight = array_sum(array_map(fn (SprintItem $i) => $i->weight, $items));
+        // Sprint 2: los items salen de MySQL (Doctrine), no de un array hardcodeado.
+        // El cálculo y el contrato visible no cambian respecto al Sprint 1.
+        $items = $this->repository->findAllOrdered();
+        $totalWeight = array_sum(array_map(fn (SprintItem $i) => $i->getWeight(), $items));
         $doneWeight = array_sum(array_map(
-            fn (SprintItem $i) => 'done' === $i->status ? $i->weight : 0,
+            fn (SprintItem $i) => 'done' === $i->getStatus() ? $i->getWeight() : 0,
             $items
         ));
         $completion = 0 === $totalWeight ? 0 : intdiv($doneWeight * 100, $totalWeight);

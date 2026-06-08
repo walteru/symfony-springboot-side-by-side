@@ -22,11 +22,11 @@ class HomeControllerTest {
     void homeRendersSprintContract() throws Exception {
         mockMvc.perform(get("/"))
             .andExpect(status().isOk())
-            // Header
-            .andExpect(content().string(containsString("Same App, Two Stacks — Sprint 1")))
+            // Header (Sprint 2)
+            .andExpect(content().string(containsString("Same App, Two Stacks — Sprint 2")))
             .andExpect(content().string(containsString("Powered by")))
             .andExpect(content().string(containsString("Spring Boot")))
-            // Items (paridad de data con symfony)
+            // Items (paridad de data con symfony, ahora desde MySQL/H2)
             .andExpect(content().string(containsString("Bootstrap repo")))
             .andExpect(content().string(containsString("Add Symfony service")))
             .andExpect(content().string(containsString("Add Spring Boot service")))

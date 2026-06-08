@@ -24,21 +24,26 @@ Una vez levantado:
 |-------------|---------------------------|-------------|
 | Symfony     | http://localhost:8094     | 8094        |
 | Spring Boot | http://localhost:8095     | 8095        |
+| MySQL       | localhost:3310            | 3310        |
+
+Desde Sprint 2 hay un servicio **MySQL 8** compartido (una sola instancia, dos
+bases separadas: `app_symfony` y `app_springboot`). Cada stack persiste sus
+sprint items en su propia base y carga el seed inicial en el primer arranque.
 
 Para bajar todo:
 
 ```bash
-docker compose down        # conserva volúmenes (cachés)
-docker compose down -v     # limpia también volúmenes
+docker compose down        # conserva volúmenes (datos de MySQL + cachés)
+docker compose down -v     # limpia también volúmenes: la base se reconstruye y se re-siembra
 ```
 
-## Contrato de paridad — Sprint 1
+## Contrato de paridad — Sprint 2
 
 Ambas apps **deben** renderizar exactamente lo mismo (texto y estructura). Esto es el "smoke test de paridad" del sprint:
 
-- Título: `Same App, Two Stacks — Sprint 1`
+- Título: `Same App, Two Stacks — Sprint 2`
 - Subtítulo: `Powered by <Framework> <versión>`
-- Tabla con **5 sprint items** (datos idénticos en ambos lados):
+- Tabla con **5 sprint items** (datos idénticos en ambos lados), ahora **leídos desde MySQL**:
 
   | id | title                    | category | status      | weight |
   |----|--------------------------|----------|-------------|--------|
@@ -53,7 +58,15 @@ Ambas apps **deben** renderizar exactamente lo mismo (texto y estructura). Esto 
   - `Total weight: 18`
   - `Completion: 72%` &nbsp; (= done_weight / total_weight = 13 / 18, redondeado hacia abajo)
 
+**Qué cambió en Sprint 2:** los items dejaron de estar hardcodeados y pasan a
+persistirse en MySQL (Doctrine ORM en Symfony, Spring Data JPA en Spring Boot).
+Los datos y la fórmula son idénticos a Sprint 1; lo único nuevo es el origen de
+los datos. Tras `docker compose down -v`, la base se reconstruye con el mismo
+seed y vuelve a dar `72%`. Un reinicio sin `-v` conserva los datos persistidos.
+
 Los tests de cada lado verifican estos valores como contrato. Si en un sprint futuro cambia la data o la fórmula, se actualiza en **ambos** lados a la vez.
+
+El plan y las decisiones de diseño de este sprint (topología MySQL, datos iniciales, fórmula) están en [`SPRINT-2.md`](SPRINT-2.md).
 
 ## Stack
 
@@ -63,16 +76,18 @@ Los tests de cada lado verifican estos valores como contrato. Si en un sprint fu
 - Symfony 7.x (`composer.json` declara `^7.2`; `composer.lock` actual fija componentes 7.4.x)
 - Apache 2.4 con `mod_rewrite` + `FallbackResource` apuntando a `public/index.php`
 - Twig 3 para vistas
+- Doctrine ORM 3 + DoctrineBundle sobre MySQL (extensión `pdo_mysql`); tests con SQLite (`pdo_sqlite`)
 - PHPUnit 11 para tests
-- Entrypoint propio: si falta `vendor/autoload.php` en el primer arranque, corre `composer install` automáticamente
+- Entrypoint propio: si falta `vendor/autoload.php` corre `composer install`; luego espera a MySQL, crea/actualiza el esquema (`doctrine:schema:update`) y siembra los datos (`app:seed`, idempotente)
 
 ### Spring Boot (`springboot/`)
 
 - Java 21 (Eclipse Temurin)
-- Spring Boot 3.3.4 (`spring-boot-starter-web` + `spring-boot-starter-thymeleaf`)
+- Spring Boot 3.3.4 (`spring-boot-starter-web` + `spring-boot-starter-thymeleaf` + `spring-boot-starter-data-jpa`)
+- Spring Data JPA sobre MySQL (`mysql-connector-j`); `ddl-auto=update` + seed idempotente al arranque; tests con H2
 - Maven 3.9 (solo dentro del contenedor, en la etapa de build)
 - Dockerfile multi-stage: build con `maven:3.9-eclipse-temurin-21` → runtime con `eclipse-temurin:21-jre` (imagen final más liviana, sin JDK)
-- JUnit 5 + `MockMvc` para tests
+- JUnit 5 + `MockMvc` + `@DataJpaTest` para tests
 
 ## Correr los tests
 
@@ -97,16 +112,18 @@ docker run --rm \
 ```
 symfony-springboot-side-by-side/
 ├── docker-compose.yml
+├── docker/mysql/init.sql        crea las dos bases (app_symfony, app_springboot)
 ├── symfony/
 │   ├── Dockerfile
 │   ├── docker/                  config Apache + entrypoint
 │   ├── composer.json
+│   ├── bin/console              CLI (schema + seed)
 │   ├── public/                  index.php + assets
-│   ├── src/                     Kernel + Controller + Domain
+│   ├── src/                     Kernel + Controller + Entity + Repository + Command
 │   ├── templates/               Twig
-│   ├── tests/                   PHPUnit
-│   ├── config/                  bundles, routes, services, framework
-│   └── .env                     valores dummy (APP_SECRET=demo-not-secret)
+│   ├── tests/                   PHPUnit (WebTestCase + KernelTestCase)
+│   ├── config/                  bundles, routes, services, framework, doctrine
+│   └── .env                     valores dummy (APP_SECRET, DATABASE_URL)
 └── springboot/
     ├── Dockerfile               multi-stage build
     ├── pom.xml
@@ -119,7 +136,7 @@ symfony-springboot-side-by-side/
 
 ## Roadmap (sprints siguientes — orientativo)
 
-- **Sprint 2** — Persistencia: misma entidad en Doctrine ORM (Symfony) y Spring Data JPA (Spring Boot) contra MySQL compartido. CRUD básico de sprint items.
+- **Sprint 2** — Persistencia ✅ (implementado): misma entidad en Doctrine ORM (Symfony) y Spring Data JPA (Spring Boot) contra MySQL. Ver [`SPRINT-2.md`](SPRINT-2.md).
 - **Sprint 3** — Validación: Symfony Validator vs Bean Validation (Jakarta).
 - **Sprint 4** — Workflow / máquinas de estado: Symfony Workflow vs Spring State Machine.
 - **Sprint 5** — Mensajería async: Symfony Messenger vs Spring `@Async` / RabbitMQ.

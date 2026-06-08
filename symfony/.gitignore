@@ -4,3 +4,4 @@
 .phpunit.result.cache
 .env.local
 .env.local.php
+/config/reference.php

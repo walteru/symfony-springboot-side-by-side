@@ -1,12 +1,15 @@
 {
     "name": "sincrodev/symfony-springboot-side-by-side-symfony",
-    "description": "Same App, Two Stacks — Symfony side (sprint 1)",
+    "description": "Same App, Two Stacks — Symfony side (sprint 2)",
     "type": "project",
     "license": "MIT",
     "require": {
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/orm": "^3.3",
+        "symfony/console": "^7.2",
         "symfony/framework-bundle": "^7.2",
         "symfony/runtime": "^7.2",
         "symfony/string": "^7.2",
@@ -22,6 +25,9 @@
     "config": {
         "allow-plugins": {
             "symfony/runtime": true
+        },
+        "platform": {
+            "php": "8.3"
         },
         "sort-packages": true
     },

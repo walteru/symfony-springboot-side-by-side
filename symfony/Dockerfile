@@ -5,8 +5,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
         libicu-dev \
         libzip-dev \
+        libsqlite3-dev \
         zlib1g-dev \
-    && docker-php-ext-install intl zip opcache \
+    && docker-php-ext-install intl zip opcache pdo_mysql pdo_sqlite \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 

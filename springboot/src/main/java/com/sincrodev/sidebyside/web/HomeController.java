@@ -20,12 +20,14 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        List<SprintItem> items = repository.findAll();
+        // Sprint 2: los items salen de MySQL (Spring Data JPA), no de un List hardcodeado.
+        // El cálculo y el contrato visible no cambian respecto al Sprint 1.
+        List<SprintItem> items = repository.findAllByOrderByIdAsc();
 
-        int totalWeight = items.stream().mapToInt(SprintItem::weight).sum();
+        int totalWeight = items.stream().mapToInt(SprintItem::getWeight).sum();
         int doneWeight = items.stream()
-            .filter(i -> "done".equals(i.status()))
-            .mapToInt(SprintItem::weight)
+            .filter(i -> "done".equals(i.getStatus()))
+            .mapToInt(SprintItem::getWeight)
             .sum();
         int completion = totalWeight == 0 ? 0 : (doneWeight * 100) / totalWeight;
 

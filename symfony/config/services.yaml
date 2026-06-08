@@ -7,7 +7,15 @@ services:
         resource: '../src/'
         exclude:
             - '../src/Kernel.php'
+            - '../src/Entity/'
 
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
+
+when@test:
+    services:
+        # Alias público del EntityManager para preparar esquema/datos en los tests.
+        test.em:
+            alias: doctrine.orm.entity_manager
+            public: true

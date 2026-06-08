@@ -1,11 +1,19 @@
 <?php
 
-namespace App\Domain;
+namespace App\DataFixtures;
 
-final class SprintItemRepository
+use App\Entity\SprintItem;
+
+/**
+ * Datos iniciales del sprint, compartidos por el comando de seed y los tests.
+ * Misma tabla (id, title, category, status, weight) que el lado Spring Boot.
+ */
+final class SprintItemSeed
 {
-    /** @return SprintItem[] */
-    public function findAll(): array
+    /**
+     * @return SprintItem[]
+     */
+    public static function items(): array
     {
         return [
             new SprintItem(1, 'Bootstrap repo',          'infra',   'done',        3),
